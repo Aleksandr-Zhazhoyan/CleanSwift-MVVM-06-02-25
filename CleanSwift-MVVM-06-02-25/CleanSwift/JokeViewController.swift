@@ -7,40 +7,28 @@
 
 import UIKit
 
-class JokeViewController: UIViewController {
+class JokeViewController: UIViewController, JokeViewProtocol {
+    var interactor: JokeInteractorProtocol?
     var jokeLabel: UILabel!
-    var jokeAPI = JokeAPI()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        fetchJoke()
+        interactor?.fetchJoke()
     }
     
     func setupUI() {
-        jokeLabel = UILabel()
+        jokeLabel = UILabel(frame: self.view.bounds)
         jokeLabel.numberOfLines = 0
-        jokeLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(jokeLabel)
-        
-        NSLayoutConstraint.activate([
-            jokeLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            jokeLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            jokeLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            jokeLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
-        ])
+        jokeLabel.textAlignment = .center
+        self.view.addSubview(jokeLabel)
     }
     
-    func fetchJoke() {
-        jokeAPI.randomJoke { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let joke):
-                    self?.displayJoke(joke)
-                case .failure(let error):
-                    self?.jokeLabel.text = "Failed to fetch joke: \(error.localizedDescription)"
-                }
-            }
+    func displayJoke(joke: Joke) {
+        if let setup = joke.setup, let delivery = joke.delivery {
+            jokeLabel.text = "\(setup) - \(delivery)"
+        } else if let jokeText = joke.joke {
+            jokeLabel.text = jokeText
         }
     }
     
